@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: fastapi-ml-serving
+  name: sk009-fastapi-ml-serving
   namespace: skala3-ai1
   labels:
-    app: fastapi-ml-serving
+    app: sk009-fastapi-ml-serving
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: fastapi-ml-serving
+      app: sk009-fastapi-ml-serving
   template:
     metadata:
       labels:
-        app: fastapi-ml-serving
+        app: sk009-fastapi-ml-serving
     spec:
       # 공유 볼륨 정의
       volumes:
@@ -27,7 +27,7 @@ spec:
 
       containers:
         # 메인 앱 컨테이너 
-        - name: fastapi-ml-serving
+        - name: sk009-fastapi-ml-serving
           image: FULL_IMAGE_PLACEHOLDER # CI에서 sed로 치환됨
           imagePullPolicy: Always
           ports:
@@ -68,7 +68,7 @@ spec:
                   fieldPath: metadata.namespace
 
         # Fluentd 사이드카 컨테이너
-        - name: fluentd
+        - name: sk009-fluentd
           image: fluent/fluentd:v1.16-1
           resources:
             requests:
@@ -89,7 +89,7 @@ spec:
           volumeMounts:
             - name: app-logs # 앱이 쓴 로그 파일 읽기
               mountPath: /var/log/app
-            - name: fluentd-pos # pos 파일 저장
+            - name: sk009-fluentd-pos # pos 파일 저장
               mountPath: /var/log/fluentd
-            - name: fluentd-config # ConfigMap -> /fluentd/etc/fluent.conf
+            - name: sk009-fluentd-config # ConfigMap -> /fluentd/etc/fluent.conf
               mountPath: /fluentd/etc
