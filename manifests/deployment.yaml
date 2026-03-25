@@ -17,13 +17,13 @@ spec:
     spec:
       # 공유 볼륨 정의
       volumes:
-        - name: app-logs # 앱 -> Fluentd 로그 전달용 공유 디렉토리
+        - name: app-logs
           emptyDir: {}
-        - name: fluentd-pos # Fluentd pos 파일 저장용
+        - name: sk009-fluentd-pos
           emptyDir: {}
-        - name: fluentd-config # ConfigMap으로 주입되는 Fluentd 설정
+        - name: sk009-fluentd-config
           configMap:
-            name: fluentd-config
+            name: sk009-fluentd-config 
 
       containers:
         # 메인 앱 컨테이너 
