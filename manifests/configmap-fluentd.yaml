@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentd-config
+  namespace: skala3-ai1
+  labels:
+    app: fastapi-ml-serving
+data:
+  fluent.conf: |
+    <source>
+      @type tail
+      path /var/log/app/*.log
+      pos_file /var/log/fluentd/app.log.pos
+      tag fastapi.ml
+      read_from_head true
+      <parse>
+        @type json
+        time_key time
+        time_format %Y-%m-%dT%H:%M:%S.%NZ
+      </parse>
+    </source>
+
+    <filter fastapi.ml>
+      @type record_transformer
+      <record>
+        namespace  "#{ENV['MY_POD_NAMESPACE']}"
+        pod_name   "#{ENV['MY_POD_NAME']}"
+        app        fastapi-ml-serving
+      </record>
+    </filter>
+
+    <match fastapi.ml>
+      @type stdout
+    </match>
+
+    # 운영 환경에서는 아래처럼 Elasticsearch / S3 / CloudWatch 등으로 교체
+    # <match fastapi.ml>
+    #   @type elasticsearch
+    #   host elasticsearch.logging.svc.cluster.local
+    #   port 9200
+    #   index_name fastapi-ml-serving
+    # </match>
