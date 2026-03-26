@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: sk009-fastapi-ml-serving
+  name: sk009-ingress
   namespace: skala3-ai1
   labels:
     app: sk009-fastapi-ml-serving
@@ -9,6 +9,7 @@ metadata:
     kubernetes.io/ingress.class: "public-nginx"
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
+  ingressClassName: public-nginx
   rules:
     - host: ingress.sk009.project.skala-ai.com
       http:
