@@ -114,3 +114,6 @@ jobs:
       - name: Show deployed pods
         run: |
           kubectl -n "${K8S_NAMESPACE}" get pods -l app=fastapi-ml-serving -o wide
+      - name: Apply Ingress
+        run: |
+          kubectl apply -f manifests/ingress.yaml -n "${K8S_NAMESPACE}"
