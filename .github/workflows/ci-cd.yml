@@ -109,11 +109,11 @@ jobs:
 
       - name: Wait for rollout
         run: |
-          kubectl -n "${K8S_NAMESPACE}" rollout status deployment/fastapi-ml-serving --timeout=300s
+          kubectl -n "${K8S_NAMESPACE}" rollout status deployment/${{ env.IMAGE_NAME }} --timeout=300s
 
       - name: Show deployed pods
         run: |
-          kubectl -n "${K8S_NAMESPACE}" get pods -l app=fastapi-ml-serving -o wide
+          kubectl -n "${K8S_NAMESPACE}" get pods -l app=${{ env.IMAGE_NAME }} -o wide
       - name: Apply Ingress
         run: |
           kubectl apply -f manifests/ingress.yaml -n "${K8S_NAMESPACE}"

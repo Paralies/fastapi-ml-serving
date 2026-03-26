@@ -6,11 +6,11 @@ metadata:
   labels:
     app: sk009-fastapi-ml-serving
   annotations:
-    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/ingress.class: "public-nginx"
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-    - host: ingress.skala25a.project.skala3-ai1.com
+    - host: ingress.sk009.project.skala-ai.com
       http:
         paths:
           - path: /
