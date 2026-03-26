@@ -94,6 +94,10 @@ jobs:
       - name: Substitute image tag in deployment manifest
         run: |
           sed -i "s|FULL_IMAGE_PLACEHOLDER|${{ needs.ci.outputs.full_image }}|g" manifests/deployment.yaml
+      
+      - name: Apply PVC
+        run: |
+          kubectl apply -f manifests/pvc.yaml -n "${K8S_NAMESPACE}"
 
       - name: Apply ConfigMap (Fluentd)
         run: |
