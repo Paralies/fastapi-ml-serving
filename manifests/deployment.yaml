@@ -15,20 +15,20 @@ spec:
       labels:
         app: sk009-fastapi-ml-serving
     spec:
-      # 공유 볼륨 정의
       volumes:
-        - name: app-logs
+        - name: app-logs              # 앱 → Fluentd 로그 전달용 (emptyDir 유지)
           emptyDir: {}
-        - name: sk009-fluentd-pos
-          emptyDir: {}
-        - name: sk009-fluentd-config
+        - name: sk009-fluentd-pos     # Fluentd pos 파일 + 로그 영구 저장 (PVC)
+          persistentVolumeClaim:
+            claimName: sk009-fluentd-log-pvc
+        - name: sk009-fluentd-config  # ConfigMap으로 주입되는 Fluentd 설정
           configMap:
-            name: sk009-fluentd-config 
+            name: sk009-fluentd-config
 
       containers:
-        # 메인 앱 컨테이너 
+        # 메인 앱 컨테이너
         - name: sk009-fastapi-ml-serving
-          image: FULL_IMAGE_PLACEHOLDER # CI에서 sed로 치환됨
+          image: FULL_IMAGE_PLACEHOLDER   # CI에서 sed로 치환됨
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
@@ -39,12 +39,9 @@ spec:
             limits:
               cpu: "500m"
               memory: "512Mi"
-          # 로그를 공유 볼륨에 파일로 출력하려면 앱에서 /var/log/app/app.log 로 쓰도록 설정
-          # 현재 실습 앱은 stdout -> Fluentd tail로 수집
           volumeMounts:
             - name: app-logs
               mountPath: /var/log/app
-          # 헬스체크: /health 엔드포인트 활용
           livenessProbe:
             httpGet:
               path: /health
@@ -87,9 +84,9 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
           volumeMounts:
-            - name: app-logs # 앱이 쓴 로그 파일 읽기
+            - name: app-logs            # 앱이 쓴 로그 파일 읽기
               mountPath: /var/log/app
-            - name: sk009-fluentd-pos # pos 파일 저장
+            - name: sk009-fluentd-pos   # pos 파일 + 로그 영구 저장 (PVC)
               mountPath: /var/log/fluentd
-            - name: sk009-fluentd-config # ConfigMap -> /fluentd/etc/fluent.conf
+            - name: sk009-fluentd-config
               mountPath: /fluentd/etc
