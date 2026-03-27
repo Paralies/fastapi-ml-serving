@@ -85,16 +85,24 @@ jobs:
           echo "=== 치환된 이미지 확인 ==="
           grep "image:" "${MANIFEST}"
 
-      - name: Delete existing deployment and re-apply
+      - name: Delete existing deployment (clean state)
         run: |
           TARGET="${{ github.event.inputs.target }}"
-          MANIFEST="manifests/deployment-${TARGET}.yaml"
-
-          # 이전 상태 완전 초기화 후 재생성 (--ignore-not-found: 최초 배포 시 에러 방지)
+          # 이전 상태 완전 초기화 (--ignore-not-found: 최초 배포 시 에러 방지)
           kubectl delete deployment sk009-fastapi-ml-serving-${TARGET} \
             -n "${K8S_NAMESPACE}" --ignore-not-found
+          # Deployment 완전 종료 대기
+          sleep 5
 
-          kubectl apply -f "${MANIFEST}" -n "${K8S_NAMESPACE}"
+      - name: Apply deployment
+        run: |
+          TARGET="${{ github.event.inputs.target }}"
+          # Deployment만 단독 apply
+          kubectl apply -f "manifests/deployment-${TARGET}.yaml" -n "${K8S_NAMESPACE}"
+
+      - name: Apply services
+        run: |
+          # Service는 Deployment와 분리하여 별도 apply
           kubectl apply -f manifests/service-bluegreen.yaml -n "${K8S_NAMESPACE}"
 
       - name: Wait for rollout
@@ -120,8 +128,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: deploy-new-version
     environment:
-      name: bluegreen-approval    # Settings > Environments > bluegreen-approval
-                                  # → Required reviewers 설정 필요
+      name: bluegreen-approval
     steps:
       - name: Approval gate
         run: |
