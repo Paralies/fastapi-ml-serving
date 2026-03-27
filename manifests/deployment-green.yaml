@@ -8,7 +8,7 @@ metadata:
     version: 2.0.0
     track: green
 spec:
-  replicas: 3
+  replicas: 1
   strategy:
     type: Recreate
   selector:
