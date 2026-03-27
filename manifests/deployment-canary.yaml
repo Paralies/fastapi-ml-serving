@@ -7,7 +7,9 @@ metadata:
     app: sk009-fastapi-ml-serving
     track: canary
 spec:
-  replicas: 1                          # stable 대비 소수 유지 (10% 트래픽 목적)
+  replicas: 1
+  strategy:          # ← spec 바로 아래로 이동
+    type: Recreate
   selector:
     matchLabels:
       app: sk009-fastapi-ml-serving
