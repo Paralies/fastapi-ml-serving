@@ -78,16 +78,23 @@ jobs:
           NEW_IMAGE="${{ steps.meta.outputs.new_image }}"
           MANIFEST="manifests/deployment-${TARGET}.yaml"
 
-          # PLACEHOLDER 치환 (BLUE/GREEN 모두 처리 — 대문자 변환 없이 명시적으로)
           sed -i "s|BLUE_IMAGE_PLACEHOLDER|${NEW_IMAGE}|g" "${MANIFEST}"
           sed -i "s|GREEN_IMAGE_PLACEHOLDER|${NEW_IMAGE}|g" "${MANIFEST}"
-          # 재배포 시 기존 태그 교체
           sed -i "s|${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${IMAGE_NAME}:.*|${NEW_IMAGE}|g" "${MANIFEST}"
 
-      - name: Apply deployment and services
+          echo "=== 치환된 이미지 확인 ==="
+          grep "image:" "${MANIFEST}"
+
+      - name: Delete existing deployment and re-apply
         run: |
           TARGET="${{ github.event.inputs.target }}"
-          kubectl apply -f "manifests/deployment-${TARGET}.yaml" -n "${K8S_NAMESPACE}"
+          MANIFEST="manifests/deployment-${TARGET}.yaml"
+
+          # 이전 상태 완전 초기화 후 재생성 (--ignore-not-found: 최초 배포 시 에러 방지)
+          kubectl delete deployment sk009-fastapi-ml-serving-${TARGET} \
+            -n "${K8S_NAMESPACE}" --ignore-not-found
+
+          kubectl apply -f "${MANIFEST}" -n "${K8S_NAMESPACE}"
           kubectl apply -f manifests/service-bluegreen.yaml -n "${K8S_NAMESPACE}"
 
       - name: Wait for rollout
@@ -151,7 +158,6 @@ jobs:
           TARGET="${{ needs.deploy-new-version.outputs.target }}"
           CURRENT="${{ needs.deploy-new-version.outputs.current }}"
 
-          # 기존 sk009-ingress의 backend service만 patch — 새 ingress 생성 없음
           kubectl patch ingress sk009-ingress \
             -n "${K8S_NAMESPACE}" \
             --type=json \
@@ -162,7 +168,6 @@ jobs:
       - name: Scale down old slot
         run: |
           CURRENT="${{ needs.deploy-new-version.outputs.current }}"
-          # 이전 슬롯 scale down (롤백 대비 보존, 리소스 절약)
           kubectl -n "${K8S_NAMESPACE}" scale deployment \
             sk009-fastapi-ml-serving-${CURRENT} --replicas=0
           echo "⏬ ${CURRENT} 슬롯 scale down 완료 (롤백 시 scale up으로 복구 가능)"
