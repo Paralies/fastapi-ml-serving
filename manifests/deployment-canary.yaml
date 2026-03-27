@@ -22,8 +22,6 @@ spec:
     spec:
       securityContext:
         fsGroup: 1000
-      strategy:
-        type: Recreate
       volumes:
         - name: app-logs
           emptyDir: {}
