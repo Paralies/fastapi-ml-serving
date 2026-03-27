@@ -4,8 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       image_tag:
-        description: "배포할 새 버전 이미지 태그 (예: abc1234)"
-        required: true
+        description: "배포할 이미지 태그 (비워두면 latest 사용)"
+        required: false
+        default: "latest"
       target:
         description: "배포 대상 (blue 또는 green)"
         required: true
@@ -45,6 +46,7 @@ jobs:
         run: |
           TARGET="${{ github.event.inputs.target }}"
           TAG="${{ github.event.inputs.image_tag }}"
+          if [ -z "${TAG}" ]; then TAG="latest"; fi
           NEW_IMAGE="${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${IMAGE_NAME}:${TAG}"
           echo "new_image=${NEW_IMAGE}" >> "$GITHUB_OUTPUT"
 

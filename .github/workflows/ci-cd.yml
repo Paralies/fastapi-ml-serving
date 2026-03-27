@@ -1,14 +1,8 @@
 name: fastapi-ml-serving-ci-cd
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-  workflow_dispatch:
-
+  workflow_dispatch:    # 수동 실행만
+ 
 permissions:
   contents: read
 
