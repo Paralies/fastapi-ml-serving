@@ -35,7 +35,7 @@ spec:
 
       containers:
         - name: sk009-fastapi-ml-serving
-          image: BLUE_IMAGE_PLACEHOLDER    # 현재 stable 이미지
+          image: amdp-registry.skala-ai.com/skala26a-ai1/sk009-fastapi-ml-serving:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
