@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sk009-fastapi-ml-serving-canary
+  namespace: skala3-ai1
+  labels:
+    app: sk009-fastapi-ml-serving
+    track: canary
+spec:
+  type: ClusterIP
+  selector:
+    app: sk009-fastapi-ml-serving
+    track: canary                # canary Pod만 선택
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP

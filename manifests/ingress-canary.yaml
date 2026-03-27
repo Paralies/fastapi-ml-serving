@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sk009-ingress-canary
+  namespace: skala3-ai1
+  labels:
+    app: sk009-fastapi-ml-serving
+    track: canary
+  annotations:
+    kubernetes.io/ingress.class: "public-nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    # Canary 핵심 설정
+    nginx.ingress.kubernetes.io/canary: "true"           # canary ingress 활성화
+    nginx.ingress.kubernetes.io/canary-weight: "10"      # 전체 트래픽의 10%를 canary로
+spec:
+  ingressClassName: public-nginx
+  rules:
+    - host: ingress.sk009.project.skala-ai.com           # stable과 동일 host 사용
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sk009-fastapi-ml-serving-canary    # canary service로 라우팅
+                port:
+                  number: 80
