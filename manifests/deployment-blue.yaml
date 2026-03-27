@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sk009-fastapi-ml-serving-blue
+  namespace: skala3-ai1
+  labels:
+    app: sk009-zero-dtd-test
+    version: 1.0.0
+    track: blue
+spec:
+  replicas: 3
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: sk009-zero-dtd-test
+      track: blue
+  template:
+    metadata:
+      labels:
+        app: sk009-zero-dtd-test
+        version: 1.0.0
+        track: blue
+    spec:
+      securityContext:
+        fsGroup: 1000
+      volumes:
+        - name: app-logs
+          emptyDir: {}
+        - name: sk009-fluentd-pos
+          emptyDir: {}
+        - name: sk009-fluentd-config
+          configMap:
+            name: sk009-fluentd-config
+
+      containers:
+        - name: sk009-fastapi-ml-serving
+          image: BLUE_IMAGE_PLACEHOLDER    # 현재 stable 이미지
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          volumeMounts:
+            - name: app-logs
+              mountPath: /var/log/app
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          env:
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+
+        - name: sk009-fluentd
+          image: fluent/fluentd:v1.16-1
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+          env:
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          volumeMounts:
+            - name: app-logs
+              mountPath: /var/log/app
+            - name: sk009-fluentd-pos
+              mountPath: /var/log/fluentd
+            - name: sk009-fluentd-config
+              mountPath: /fluentd/etc
